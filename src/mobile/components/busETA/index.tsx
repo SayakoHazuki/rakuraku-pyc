@@ -222,7 +222,7 @@ export default function MBusETA() {
       );
       Promise.all(etaPromises).then((data) => {
         const eta = data.map((d: IApiBusEta) =>
-          d.data.map((d) => d.eta ?? "未有班次")
+          d.data.map((d) => d.eta ?? "--")
         );
         result = result.map((route, i) => {
           return {
@@ -257,7 +257,7 @@ export default function MBusETA() {
           bus={route.route}
           boarding={route.stop}
           destination={route.destination}
-          eta={[route.eta[0] || "- - -", route.eta[1] || "- - -"]}
+          eta={[route.eta[0] || "--", route.eta[1] || "-"]}
           arrivalEta={route.arrivalEta || "23:59"}
         />
       ))}
