@@ -221,7 +221,9 @@ export default function MBusETA() {
         fetch(route.url).then((res) => res.json())
       );
       Promise.all(etaPromises).then((data) => {
-        const eta = data.map((d:IApiBusEta) => d.data.map((d) => d.eta ?? "No Service"));
+        const eta = data.map((d: IApiBusEta) =>
+          d.data.map((d) => d.eta ?? "未有班次")
+        );
         result = result.map((route, i) => {
           return {
             ...route,
@@ -233,7 +235,7 @@ export default function MBusETA() {
       });
       Promise.all(arrivalEtaPromises).then((data) => {
         const arrivalEta = data.map(
-          (d:IApiBusEta) => d.data.map((d) => d.eta ?? "N/A")[0]
+          (d: IApiBusEta) => d.data.map((d) => d.eta ?? "N/A")[0]
         );
         result = result.map((route, i) => {
           return {
@@ -262,4 +264,3 @@ export default function MBusETA() {
     </div>
   );
 }
-
