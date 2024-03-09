@@ -1,9 +1,21 @@
+"use client";
+
+import { formatDateLong } from "@/util/misc/datetime";
 import styles from "./index.module.css";
+import { useEffect, useState } from "react";
 
 export default function MHeader_Date() {
+  const [dateNow, setDateNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDateNow(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className={styles.headerDate}>
-      <div className={styles.date}>8/3 Tue</div>
+      <div className={styles.date}>{formatDateLong(dateNow)}</div>
     </div>
   );
 }
