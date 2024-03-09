@@ -7,15 +7,25 @@ import stopRouteData from "../../../data/fetched/route-stops.json";
 import targetStops from "../../../data/bus/target-stops.json";
 import { useEffect, useState } from "react";
 
+interface IArrivalRoute {
+  bus: string;
+  bound: string;
+  type: string;
+  arrivalSeq: string;
+  arrivalStop: string;
+}
+
 interface RakurakuRoute {
-  stopId: string;
-  stop: string;
+  boardingId: string;
+  boardingStop: string;
+  boardingSeq: string;
   distance: number;
   route: string;
   type: string;
   bound: string;
   destinationId: string;
-  destination: string;
+  destinationStop: string;
+  destinationSeq: string;
   eta: string[];
   arrivalEta: string | null;
 }
@@ -40,6 +50,27 @@ interface IApiBusEta {
     rmk_sc: string;
     data_timestamp: string;
   }[];
+}
+
+interface IApiLessBusEta {
+  type: string;
+  version: string;
+  generated_timestamp: string;
+  data: IApiLessBusEtaData[];
+}
+
+interface IApiLessBusEtaData {
+  co: string;
+  route: string;
+  dir: string;
+  service_type: string;
+  seq: string;
+  dest_tc: string;
+  dest_en: string;
+  dest_sc: string;
+  eta_seq: number;
+  eta: string | null;
+  data_timestamp: string;
 }
 
 export default function MBusETA() {
@@ -71,14 +102,26 @@ export default function MBusETA() {
       return deg * (Math.PI / 180);
     }
 
+    function formatTime(date: Date) {
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        return `${hours}:${minutes}`;
+      }
+      return `---`;
+    }
+
     const loadCoords = () =>
       new Promise<[number, number]>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition((position) => {
           resolve([position.coords.latitude, position.coords.longitude]);
         });
       });
+
     loadCoords().then((coords) => {
-      console.log(coords);
+      console.log("You are at", coords);
+
+      /* Nearby stops processing */
       const calculatedStops = stops.data.map((stop) => ({
         ...stop,
         distance: getDistanceFromLatLonInKm(
@@ -100,56 +143,61 @@ export default function MBusETA() {
         (stop) => closestStops.includes(stop.name_en) && stop.distance < 5
       );
 
-      console.log(closestStopsData);
+      console.log("Closest stops", closestStopsData);
 
-      const targetedRoutes: {
-        bus: string;
-        bound: string;
-        type: string;
-        seq: string;
-        arrivalStop: string;
-      }[] = [];
+      /* Getting all routes to targeted stops */
+      const targetedArrivalRoutes: IArrivalRoute[] = [];
 
-      const filteredStops = stopRouteData.data.filter((stop) =>
+      const targetedArrivingRouteStops = stopRouteData.data.filter((stop) =>
         targetStops.includes(stop.stop)
       );
-      for (const stop of filteredStops) {
+      for (const routeStop of targetedArrivingRouteStops) {
         const route = {
-          bus: stop.route,
-          bound: stop.bound,
-          type: stop.service_type,
-          seq: stop.seq,
-          arrivalStop: stop.stop,
+          bus: routeStop.route,
+          bound: routeStop.bound,
+          type: routeStop.service_type,
+          arrivalSeq: routeStop.seq,
+          arrivalStop: routeStop.stop,
         };
-        if (!targetedRoutes.find((r) => r.bus === route.bus)) {
-          targetedRoutes.push(route);
+        // Push if not in result array
+        if (!targetedArrivalRoutes.find((r) => r.bus === route.bus)) {
+          targetedArrivalRoutes.push(route);
         }
       }
 
-      console.log(targetedRoutes);
+      console.log(targetedArrivalRoutes);
 
+      /* Filtering nearby routes */
       let result: RakurakuRoute[] = [];
+
       for (const stop of closestStopsData) {
         const stopRoutes = stopRouteData.data.filter(
           (route) => route.stop === stop.stop
         );
         const filteredStopRoutes = stopRoutes.filter((route) =>
-          targetedRoutes.find((r) => r.bus === route.route && r.seq > route.seq)
+          targetedArrivalRoutes.find(
+            (r) => r.bus === route.route && r.arrivalSeq > route.seq
+          )
         );
-        for (const route of filteredStopRoutes) {
-          const routeData = targetedRoutes.find((r) => r.bus === route.route);
-          if (routeData) {
+
+        for (const boardingRt of filteredStopRoutes) {
+          const arrivalRtData = targetedArrivalRoutes.find(
+            (arrRt) => arrRt.bus === boardingRt.route
+          );
+          if (arrivalRtData) {
             result.push({
-              stopId: stop.stop,
-              stop: stop.name_tc,
+              boardingId: stop.stop,
+              boardingStop: stop.name_tc,
+              boardingSeq: boardingRt.seq,
               distance: stop.distance,
-              route: routeData.bus,
-              type: routeData.type,
-              bound: routeData.bound,
-              destinationId: routeData.arrivalStop,
-              destination:
-                stops.data.find((r) => r.stop === routeData.arrivalStop)
-                  ?.name_tc ?? "Unknown",
+              route: arrivalRtData.bus,
+              type: arrivalRtData.type,
+              bound: arrivalRtData.bound,
+              destinationId: arrivalRtData.arrivalStop,
+              destinationStop:
+                stops.data.find((r) => r.stop === arrivalRtData.arrivalStop)
+                  ?.name_tc ?? "---",
+              destinationSeq: arrivalRtData.arrivalSeq,
               eta: [],
               arrivalEta: null,
             });
@@ -161,57 +209,17 @@ export default function MBusETA() {
       console.log(result);
       setRoutes(result);
 
-      // for (const route of result) {
-      //   // https://data.etabus.gov.hk/v1/transport/kmb/eta/{stop_id}/{route}/{service_type}
-      //   const url = `https://data.etabus.gov.hk/v1/transport/kmb/eta/${route.stopId}/${route.route}/${route.type}`;
-      //   fetch(url)
-      //     .then((res) => res.json())
-      //     .then((data: IApiBusEta) => {
-      //       const eta = data.data.map((d) => d.eta ?? "No Service");
-      //       console.log(route.route, eta);
-      //       const i = result.findIndex(
-      //         (r) =>
-      //           r.route === route.route &&
-      //           r.bound === route.bound &&
-      //           r.type === route.type &&
-      //           r.stopId === route.stopId
-      //       );
-      //       console.log(i);
-      //       result[i] = {
-      //         ...route,
-      //         eta,
-      //       };
-      //       setRoutes(result);
-      //     });
-      //   const url2 = `https://data.etabus.gov.hk/v1/transport/kmb/eta/${route.destinationId}/${route.route}/${route.type}`;
-      //   fetch(url2)
-      //     .then((res) => res.json())
-      //     .then((data: IApiBusEta) => {
-      //       const arrivalEta = data.data.map((d) => d.eta ?? "N/A")[0];
-      //       const i = result.findIndex(
-      //         (r) =>
-      //           r.route === route.route &&
-      //           r.bound === route.bound &&
-      //           r.type === route.type &&
-      //           r.stopId === route.stopId
-      //       );
-      //       result[i] = {
-      //         ...route,
-      //         arrivalEta,
-      //       };
-      //       setRoutes(result);
-      //     });
-      // }
+      /* Getting ETAs */
       const etaMap = result.map((route) => {
         return {
           route,
-          url: `https://data.etabus.gov.hk/v1/transport/kmb/eta/${route.stopId}/${route.route}/${route.type}`,
+          url: `https://data.etabus.gov.hk/v1/transport/kmb/eta/${route.boardingId}/${route.route}/${route.type}`,
         };
       });
       const arrivalEtaMap = result.map((route) => {
         return {
           route,
-          url: `https://data.etabus.gov.hk/v1/transport/kmb/eta/${route.destinationId}/${route.route}/${route.type}`,
+          url: `https://data.etabus.gov.hk/v1/transport/kmb/route-eta/${route.route}/${route.type}`,
         };
       });
       const etaPromises = etaMap.map((route) =>
@@ -220,47 +228,63 @@ export default function MBusETA() {
       const arrivalEtaPromises = arrivalEtaMap.map((route) =>
         fetch(route.url).then((res) => res.json())
       );
-      Promise.all(etaPromises).then((data) => {
-        const eta = data.map((d: IApiBusEta) =>
-          d.data.map((d) => d.eta ?? "--")
-        );
+      Promise.all(etaPromises).then((data: IApiBusEta[]) => {
+        const etas = data.map((d) => d.data.map((d) => d.eta ?? "--"));
         result = result.map((route, i) => {
           return {
             ...route,
-            eta: eta[i],
+            eta: etas[i].map((d) => formatTime(new Date(d))),
           };
         });
         console.log(result);
         setRoutes(result);
       });
-      Promise.all(arrivalEtaPromises).then((data) => {
-        const arrivalEta = data.map(
-          (d: IApiBusEta) => d.data.map((d) => d.eta ?? "N/A")[0]
-        );
-        result = result.map((route, i) => {
-          return {
-            ...route,
-            arrivalEta: arrivalEta[i],
-          };
+      Promise.all(arrivalEtaPromises).then((_data: IApiLessBusEta[]) => {
+        const allData = _data.map((d) => d.data);
+
+        const processedAllData = allData.map((routeEtas) => {
+          const sortedRouteEtas = routeEtas.sort(
+            (a, b) =>
+              new Date(a.eta || 0).getTime() - new Date(b.eta || 0).getTime()
+          );
+          let resultingEta: IApiLessBusEtaData[] = [];
+          const boardingEta = sortedRouteEtas.find(
+            (eta) => eta.seq === result[0].boardingSeq && eta.eta_seq == 1
+          );
+          if (!boardingEta) return;
+          resultingEta.push(boardingEta);
         });
-        console.log(result);
-        setRoutes(result);
+
+        // const arrivalEta = data.map(
+        //   (d: IApiBusEta) => d.data.map((d) => d.eta ?? "N/A")[0]
+        // );
+        // result = result.map((route, i) => {
+        //   return {
+        //     ...route,
+        //     arrivalEta: formatTime(new Date(arrivalEta[i])),
+        //   };
+        // });
+        // console.log(result);
+        // setRoutes(result);
       });
     });
   }, []);
 
   return (
     <div className={styles.container}>
-      {routes.map((route: RakurakuRoute, i) => (
-        <MBusETA_Item
-          key={`${route.stopId}-${route.route}-${route.bound}-${route.destinationId}-${route.type}-${i}`}
-          bus={route.route}
-          boarding={route.stop}
-          destination={route.destination}
-          eta={[route.eta[0] || "--", route.eta[1] || "-"]}
-          arrivalEta={route.arrivalEta || "23:59"}
-        />
-      ))}
+      {routes
+        .sort((a, b) => a.distance - b.distance)
+        .sort((a, b) => (a.eta.length >= 2 && b.eta.length < 2 ? -1 : 0))
+        .map((route: RakurakuRoute, i) => (
+          <MBusETA_Item
+            key={`${route.boardingId}-${route.route}-${route.bound}-${route.destinationId}-${route.type}-${i}`}
+            bus={route.route}
+            boarding={route.boardingStop}
+            destination={route.destinationStop}
+            eta={[route.eta[0] || "--", route.eta[1] || "-"]}
+            arrivalEta={route.arrivalEta || "23:59"}
+          />
+        ))}
     </div>
   );
 }
