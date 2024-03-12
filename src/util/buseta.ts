@@ -371,25 +371,34 @@ class RouteAllEta {
     const result = this.raw
       .filter((d) => d.seq.toString() === this.routeData.seq)
       .map((d) => new ETA(this.routeData, d));
-    return [...result, ...Array(2 - result.length).fill(null)].slice(0, 3);
+    const numOfResults = Math.max(3 - result.length, 1);
+    return [...result, ...Array(numOfResults).fill(null)].slice(0, 3);
   }
 
   get arrivalEtas() {
-    let firstArrivalEta: IApiBusEtaData | undefined = undefined;
     let currentSeq = this.routeData.seq;
     let currentEta: string | null = this.boardingEtas[0]?.raw.eta || null;
+    let possibleEtas: IApiBusEtaData[] = [];
     for (const eta of this.raw) {
-      if (!(currentEta && eta.eta && new Date(eta.eta) > new Date(currentEta)))
+      if (eta.seq <= Number(this.routeData.seq)) continue;
+      if (!(currentEta && eta.eta && new Date(eta.eta) >= new Date(currentEta)))
         continue;
 
-      if (eta.seq.toString() === this.routeData.arrivalSeq) {
-        firstArrivalEta = eta;
-        break;
+      if (eta.seq === Number(this.routeData.arrivalSeq)) {
+        possibleEtas.push(eta);
       }
 
-      if (eta.seq > Number(currentSeq)) currentEta = eta.eta;
+      if (eta.seq > Number(currentSeq)) {
+        currentEta = eta.eta;
+        currentSeq = eta.seq;
+      }
     }
-    if (!firstArrivalEta) return null;
+    if (!possibleEtas.length) return null;
+
+    const firstArrivalEta = possibleEtas.sort((a, b) =>
+      new Date(a.eta ?? 0) > new Date(b.eta ?? 0) ? 1 : -1
+    )[0];
+
     return this.raw
       .filter(
         (d) =>

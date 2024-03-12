@@ -110,6 +110,7 @@ export default function MBusETA() {
           if (a.props.eta[0] !== "---" && b.props.eta[0] === "---") {
             return -1;
           }
+          return 0;
         });
         setItems(items);
       });
