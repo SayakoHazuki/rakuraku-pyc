@@ -376,7 +376,7 @@ class RouteAllEta {
   }
 
   get arrivalEtas() {
-    let currentSeq = this.routeData.seq;
+    let currentSeq = Number(this.routeData.seq);
     let currentEta: string | null = this.boardingEtas[0]?.raw.eta || null;
     let possibleEtas: IApiBusEtaData[] = [];
     for (const eta of this.raw) {
