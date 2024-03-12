@@ -1,6 +1,8 @@
 import "../styles/globals.css";
 
-export const metadata = {
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
   title: "Rakuraku PYC",
   description: "A web app aiming to accommodate SPYCers.",
   generator: "Next.js",
