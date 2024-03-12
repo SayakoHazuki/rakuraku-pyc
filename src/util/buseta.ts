@@ -171,9 +171,9 @@ export class BusInstance {
     this.sortedNearbyStops = [];
     this.sortedNearbyGroupedStops = [];
 
-    const firstTryConditions = [(stop: IDistancedBusStop) => stop.distance < 5];
+    const firstTryConditions = [(stop: IDistancedBusStop) => stop.distance < 3];
 
-    let c = 15;
+    let c = 40;
 
     while (!this.nearbyRoutes.length) {
       this.sortedNearbyStops = this.getSortedNearbyStops(c);
@@ -182,7 +182,7 @@ export class BusInstance {
         c == 15 ? firstTryConditions : []
       );
       this.nearbyRoutes = this.getNearbyRoutes();
-      c += 15;
+
       console.log(
         "Trying bus stop count",
         c,
@@ -190,6 +190,7 @@ export class BusInstance {
         this.nearbyRoutes.length,
         "routes"
       );
+      c += 15;
     }
 
     window.bus = this;
