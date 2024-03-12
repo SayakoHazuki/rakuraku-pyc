@@ -171,15 +171,15 @@ export class BusInstance {
     this.sortedNearbyStops = [];
     this.sortedNearbyGroupedStops = [];
 
-    const firstTryConditions = [(stop: IDistancedBusStop) => stop.distance < 3];
+    const firstTryConditions = [(stop: IDistancedBusStop) => stop.distance < 2];
 
-    let c = 40;
+    let c = 30;
 
     while (!this.nearbyRoutes.length) {
       this.sortedNearbyStops = this.getSortedNearbyStops(c);
       this.sortedNearbyGroupedStops = BusETAAPI.groupStops(
         this.sortedNearbyStops,
-        c == 15 ? firstTryConditions : []
+        c == 30 ? firstTryConditions : []
       );
       this.nearbyRoutes = this.getNearbyRoutes();
 
@@ -190,7 +190,7 @@ export class BusInstance {
         this.nearbyRoutes.length,
         "routes"
       );
-      c += 15;
+      c += c == 30 ? 5 : 15;
     }
 
     window.bus = this;
