@@ -222,7 +222,8 @@ export class BusInstance {
       const filteredRSsOfStop = allRoutesOfStop.filter((thisRS) =>
         BusETAAPI.targetedRouteStopList.find(
           (targetRS) =>
-            isSameRoute(targetRS, thisRS) && targetRS.seq > thisRS.seq
+            isSameRoute(targetRS, thisRS) &&
+            Number(targetRS.seq) > Number(thisRS.seq)
         )
       );
 
@@ -388,7 +389,7 @@ class RouteAllEta {
 
   get boardingEtas() {
     const result = this.raw
-      .filter((d) => d.seq.toString() === this.routeData.seq)
+      .filter((d) => d.seq === Number(this.routeData.seq))
       .map((d) => new ETA(this.routeData, d));
     const numOfResults = Math.max(3 - result.length, 1);
     return [...result, ...Array(numOfResults).fill(null)].slice(0, 3);
@@ -421,8 +422,8 @@ class RouteAllEta {
     return this.raw
       .filter(
         (d) =>
-          d.seq.toString() === this.routeData.arrivalSeq &&
-          d.eta_seq >= (firstArrivalEta?.eta_seq || 4)
+          d.seq === Number(this.routeData.arrivalSeq) &&
+          Number(d.eta_seq) >= (Number(firstArrivalEta?.eta_seq) || 4)
       )
       .map((d) => new ETA(this.routeData, d));
   }
