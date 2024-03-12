@@ -151,7 +151,7 @@ class BusETAAPI {
 
     for (const routeStop of targetedArrivingRouteStops) {
       // Push if not in result array
-      if (!results.find((r) => r.route === routeStop.route)) {
+      if (!results.find((r) => isSameRoute(r, routeStop))) {
         results.push(routeStop);
       }
     }
@@ -167,12 +167,30 @@ export class BusInstance {
 
   constructor(currentCords: [number, number]) {
     this.currentCords = currentCords;
-    this.sortedNearbyStops = this.getSortedNearbyStops(15);
-    this.sortedNearbyGroupedStops = BusETAAPI.groupStops(
-      this.sortedNearbyStops,
-      [(stop) => stop.distance < 5]
-    );
-    this.nearbyRoutes = this.getNearbyRoutes();
+    this.nearbyRoutes = [];
+    this.sortedNearbyStops = [];
+    this.sortedNearbyGroupedStops = [];
+
+    const firstTryConditions = [(stop: IDistancedBusStop) => stop.distance < 5];
+
+    let c = 15;
+
+    while (!this.nearbyRoutes.length) {
+      this.sortedNearbyStops = this.getSortedNearbyStops(c);
+      this.sortedNearbyGroupedStops = BusETAAPI.groupStops(
+        this.sortedNearbyStops,
+        c == 15 ? firstTryConditions : []
+      );
+      this.nearbyRoutes = this.getNearbyRoutes();
+      c += 15;
+      console.log(
+        "Trying bus stop count",
+        c,
+        "found",
+        this.nearbyRoutes.length,
+        "routes"
+      );
+    }
 
     window.bus = this;
   }
