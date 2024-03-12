@@ -104,10 +104,10 @@ export default function MBusETA() {
         }
         items = items.sort((a, b) => {
           // if eta[0] is "---", it should be placed at the end
-          if (a.props.eta[0] === "---" && b.props.eta[0] !== "---") {
+          if (a.props?.eta?.[0] === "---" && b.props?.eta?.[0] !== "---") {
             return 1;
           }
-          if (a.props.eta[0] !== "---" && b.props.eta[0] === "---") {
+          if (a.props?.eta?.[0] !== "---" && b.props?.eta?.[0] === "---") {
             return -1;
           }
           return 0;
