@@ -10,5 +10,6 @@ Link: https://rakuraku-pyc.vercel.app/
 - Display timetable
 - Display school calendar
 - Integrations with PYCNet
+- View ETA of KMB buses leaving from Wo Che (GPS-based)
 
 **Any kind of contribution is appreciated**
