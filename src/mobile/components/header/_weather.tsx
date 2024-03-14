@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import styles from "./index.module.css";
 
 export default function MHeader_Weather() {
-  const [temp, setTemp] = useState(0);
+  const [temp, setTemp] = useState<Number | null>(null);
   useEffect(() => {
     fetch(
       "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=rhrread&lang=tc"
@@ -18,7 +18,7 @@ export default function MHeader_Weather() {
   return (
     <div className={styles.headerWeather}>
       <div className={styles.temp}>
-        <span>{temp}</span>°C
+        <span>{temp ? temp.toString() + "°C" : "..."}</span>
       </div>
     </div>
   );

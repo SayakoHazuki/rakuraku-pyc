@@ -5,7 +5,7 @@ import styles from "./index.module.css";
 import { formatTime } from "@/util/misc/datetime";
 
 export default function MHeader_Clock() {
-  const [dateNow, setDateNow] = useState(new Date());
+  const [dateNow, setDateNow] = useState<Date | null>(null);
   useEffect(() => {
     const interval = setInterval(() => {
       setDateNow(new Date());
@@ -15,7 +15,9 @@ export default function MHeader_Clock() {
 
   return (
     <div className={styles.headerClock}>
-      <div className={styles.time}>{formatTime(dateNow)}</div>
+      <div className={styles.time}>
+        {dateNow ? formatTime(dateNow) : "Rakuraku PYC"}
+      </div>
     </div>
   );
 }

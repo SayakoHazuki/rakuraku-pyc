@@ -5,7 +5,7 @@ import styles from "./index.module.css";
 import { useEffect, useState } from "react";
 
 export default function MHeader_Date() {
-  const [dateNow, setDateNow] = useState(new Date());
+  const [dateNow, setDateNow] = useState<Date | null>(null);
   useEffect(() => {
     const interval = setInterval(() => {
       setDateNow(new Date());
@@ -15,7 +15,9 @@ export default function MHeader_Date() {
 
   return (
     <div className={styles.headerDate}>
-      <div className={styles.date}>{formatDateLong(dateNow)}</div>
+      <div className={styles.date}>
+        {dateNow ? formatDateLong(dateNow) : "..."}
+      </div>
     </div>
   );
 }
