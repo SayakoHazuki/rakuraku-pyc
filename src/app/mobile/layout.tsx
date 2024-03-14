@@ -1,6 +1,6 @@
 import MHeader from "@/mobile/components/header";
 
-import styles from "../Page.module.css";
+import styles from "./layout.module.css";
 
 interface IMobileLayoutProps {
   children: React.ReactNode | React.ReactNode[];
