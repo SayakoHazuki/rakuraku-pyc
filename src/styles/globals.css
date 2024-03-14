@@ -26,10 +26,11 @@
   --color-link: #007bff;
 
   --color-bg: #313338;
+  --color-bg-inner: #2b2d31;
   --color-bg-secondary: #3d3f42;
   --color-text: #fff;
   --color-text-secondary: #b0b0b0;
-  --color-text-strong: #99ccff
+  --color-text-strong: #99ccff;
 }
 
 html {
@@ -38,6 +39,7 @@ html {
   padding: 0;
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -52,4 +54,10 @@ body {
   font-optical-sizing: auto;
   font-weight: normal;
   font-style: normal;
+  overflow: hidden;
+}
+
+a {
+  color: var(--color-text);
+  text-decoration: none;
 }

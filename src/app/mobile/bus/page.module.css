@@ -2,8 +2,7 @@
   height: 100vh;
   max-width: 80vh;
   margin: 0 auto;
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   background-color: var(--color-bg);
   color: var(--color-text);
   width: 100%;

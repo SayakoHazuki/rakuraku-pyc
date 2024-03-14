@@ -1,4 +1,5 @@
 .container {
+  height: 1.2rem;
   width: 100%;
   overflow: hidden;
   display: grid;
