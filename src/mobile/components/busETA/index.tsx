@@ -2,9 +2,6 @@
 
 import styles from "./index.module.css";
 import MBusETA_Item from "./_item";
-import stops from "../../../data/fetched/stops.json";
-import stopRouteData from "../../../data/fetched/route-stops.json";
-import targetStops from "../../../data/bus/target-stops.json";
 import { useEffect, useState } from "react";
 import {
   getCurrentPosition,
