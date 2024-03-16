@@ -4,6 +4,9 @@ import GApiClient from "@/util/googleapi";
 import styles from "./index.module.css";
 import { useEffect, useState } from "react";
 import useScript from "@/util/misc/useScript";
+import GoogleAuthButton from "@/shared/components/google/GAuthButton";
+import MEventList from "./eventList";
+import { GSheetRow } from "./types";
 
 declare global {
   interface Window {
@@ -19,13 +22,13 @@ export function MEvents() {
     "https://www.googleapis.com/auth/spreadsheets.readonly"
   );
 
-  const [gAuthButtonShown, setGAuthButtonShown] = useState(true);
-  const [gAuthButtonTxt, setGAuthButtonTxt] = useState("");
+  const [gAuthButtonShown, setGAuthButtonShown] = useState(false);
+  const [gAuthButtonTxt, setGAuthButtonTxt] = useState("Loading...");
   const [gAuthSignoutButtonShown, setGAuthSignoutButtonShown] = useState(false);
   const [gAuthMessage, setGAuthMessage] = useState("");
   const [gAuthError, setGAuthError] = useState("");
-  const [handleAuthClick, setHandleAuthClick] = useState(() => {});
-  const [handleSignoutClick, setHandleSignoutClick] = useState(() => {});
+  const [ESSData, setESSData] = useState<GSheetRow[]>([]);
+  const [targetForm, setTargetForm] = useState(1);
 
   gClient.displayGAuthButton = (text: string) => {
     setGAuthButtonTxt(text);
@@ -47,6 +50,10 @@ export function MEvents() {
     setGAuthError(err);
   };
 
+  gClient.ESSDataCallback = (data: GSheetRow[]) => {
+    setESSData(data);
+  };
+
   useEffect(() => {
     window.client = gClient;
   }, []);
@@ -58,30 +65,25 @@ export function MEvents() {
     window.client.onGisLoaded();
   });
 
+  const handleFormSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setTargetForm(parseInt(e.target.value));
+  };
+
   return (
     <div className={styles.container}>
-      <div>Events</div>
-      {gAuthButtonShown && (
-        <button
-          onClick={() => {
-            console.log("authorizing");
-            window.client.handleAuthClick();
-          }}
-        >
-          {gAuthButtonTxt}
-        </button>
-      )}
-      {gAuthSignoutButtonShown && (
-        <button
-          onClick={() => {
-            window.client.handleSignoutClick();
-          }}
-        >
-          Sign out
-        </button>
-      )}
+      <div className={styles.title}>Upcoming Events</div>
+      <select onChange={handleFormSelect}>
+        <option value="1">Form 1</option>
+        <option value="2">Form 2</option>
+        <option value="3">Form 3</option>
+        <option value="4">Form 4</option>
+        <option value="5">Form 5</option>
+        <option value="6">Form 6</option>
+      </select>
+      {gAuthButtonShown ? <GoogleAuthButton text={gAuthButtonTxt} /> : null}
       <div>{gAuthMessage}</div>
       <div>{gAuthError}</div>
+      <MEventList rowData={ESSData} targetForm={targetForm} />
     </div>
   );
 }

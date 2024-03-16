@@ -1,12 +1,17 @@
+import { GSheetRow } from "@/mobile/components/events/types";
+
 export default class GApiClient {
   client_id: string;
   apiKey: string;
   discoveryDocs: string[];
   scopes: string;
+  onceAuthed: boolean = false;
 
   tokenClient: google.accounts.oauth2.TokenClient | undefined;
   gapiInited: boolean;
   gisInited: boolean;
+
+  ESSDataCallback: (data: GSheetRow[]) => void;
 
   displayGAuthButton: (text: string) => void;
   displayGAuthSignoutButton: () => void;
@@ -40,6 +45,7 @@ export default class GApiClient {
     this.hideGAuthSignoutButton = () => {};
     this.displayGAuthMessage = (text: string) => {};
     this.displayGAuthError = (err: any) => {};
+    this.ESSDataCallback = () => {};
   }
 
   onGapiLoaded() {
@@ -66,14 +72,17 @@ export default class GApiClient {
       client_id: this.client_id,
       scope: this.scopes,
       callback: this.handleAuthClick,
+      prompt: "",
     });
     this.gisInited = true;
     this.maybeEnableButtons();
   }
 
   maybeEnableButtons() {
-    if (this.gapiInited && this.gisInited) {
-      this.displayGAuthButton("Authorize");
+    if (this.gapiInited && this.gisInited && !this.onceAuthed) {
+      this.onceAuthed = true;
+      this.handleAuthClick();
+      this.displayGAuthButton("Sign in to Google");
     }
   }
 
@@ -84,14 +93,11 @@ export default class GApiClient {
         throw resp;
       }
       this.displayGAuthSignoutButton();
-      this.displayGAuthButton("Refresh");
-      await this.listMajors();
+      // this.displayGAuthButton("Refresh");
+      this.hideGAuthButton();
+      await this.fetchESS();
     };
-    if (gapi.client.getToken() == null) {
-      this.tokenClient.requestAccessToken({ prompt: "consent" });
-    } else {
-      this.tokenClient.requestAccessToken({ prompt: "" });
-    }
+    this.tokenClient.requestAccessToken({ prompt: "" });
   }
 
   handleSignoutClick() {
@@ -100,12 +106,12 @@ export default class GApiClient {
     google.accounts.oauth2.revoke(token, () => {
       gapi.client.setToken(null);
       this.displayGAuthMessage("");
-      this.displayGAuthButton("Authorize");
+      this.displayGAuthButton("Sign in to Google");
       this.hideGAuthSignoutButton();
     });
   }
 
-  async listMajors() {
+  async fetchESS() {
     let response;
     try {
       response = await gapi.client.sheets.spreadsheets.get({
@@ -138,5 +144,8 @@ export default class GApiClient {
     }
 
     console.log(response.result);
+    this.ESSDataCallback(
+      (response.result?.sheets?.[0]?.data?.[0]?.rowData ?? []) as GSheetRow[]
+    );
   }
 }
