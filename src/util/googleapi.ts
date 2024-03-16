@@ -1,5 +1,9 @@
 import { GSheetRow } from "@/mobile/components/events/types";
 
+interface ITokenClient extends google.accounts.oauth2.TokenClient {
+  callback: (resp: any) => void;
+}
+
 export default class GApiClient {
   client_id: string;
   apiKey: string;
@@ -7,7 +11,7 @@ export default class GApiClient {
   scopes: string;
   onceAuthed: boolean = false;
 
-  tokenClient: google.accounts.oauth2.TokenClient | undefined;
+  tokenClient: ITokenClient | undefined;
   gapiInited: boolean;
   gisInited: boolean;
 
@@ -73,7 +77,7 @@ export default class GApiClient {
       scope: this.scopes,
       callback: this.handleAuthClick,
       prompt: "",
-    });
+    }) as ITokenClient;
     this.gisInited = true;
     this.maybeEnableButtons();
   }
