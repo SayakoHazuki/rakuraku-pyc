@@ -6,5 +6,7 @@
   height: calc(100% - 6rem);
   min-height: 0;
   max-height: 100vh;
-  overflow-y: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
 }

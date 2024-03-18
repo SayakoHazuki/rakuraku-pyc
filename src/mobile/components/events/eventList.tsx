@@ -22,7 +22,7 @@ export default function MEventList(props: IMEventListProps) {
   console.log(events);
 
   return (
-    <div className={styles.container}>
+    <div className={styles.containerInner}>
       {events.eventsGroupBySession().map((session, i) => {
         const targetEvents = session.events.filter(
           (e) => e.form === targetForm

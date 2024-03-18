@@ -8,7 +8,13 @@
   margin: 0 0.7rem;
   min-height: 0;
   max-height: 100vh;
-  overflow-y: scroll;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.containerInner {
+  width: 80%;
+  margin-bottom: 2rem;
 }
 
 .title {
