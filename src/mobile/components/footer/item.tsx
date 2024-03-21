@@ -1,4 +1,4 @@
-import { classNames } from "@/util/classnames";
+import { classNames } from "@/util/misc/classnames";
 import Link from "next/link";
 import styles from "./index.module.css";
 
