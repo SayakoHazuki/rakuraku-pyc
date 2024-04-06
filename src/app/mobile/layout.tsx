@@ -1,4 +1,4 @@
-import MHeader from "@/mobile/components/header";
+import MHeader from "@/components/mobile/header";
 
 import styles from "./layout.module.css";
 

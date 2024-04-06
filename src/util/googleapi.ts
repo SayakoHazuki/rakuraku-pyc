@@ -1,4 +1,4 @@
-import { GSheetRow } from "@/mobile/components/events/types";
+import { GSheetRow } from "@/components/mobile/events/types";
 
 interface ITokenClient extends google.accounts.oauth2.TokenClient {
   callback: (resp: any) => void;

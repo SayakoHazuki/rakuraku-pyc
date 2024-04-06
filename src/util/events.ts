@@ -1,4 +1,4 @@
-import { GSheetRow } from "@/mobile/components/events/types";
+import { GSheetRow } from "@/components/mobile/events/types";
 
 interface EventData {
   date?: EventDate;
