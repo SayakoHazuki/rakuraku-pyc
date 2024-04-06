@@ -1,6 +1,8 @@
 import MHeader from "@/components/mobile/header";
 
-import styles from "./layout.module.css";
+import styles from "./mobile-global.module.css";
+import { Suspense } from "react";
+import Loading from "./loading";
 
 interface IMobileLayoutProps {
   children: React.ReactNode | React.ReactNode[];
@@ -8,9 +10,11 @@ interface IMobileLayoutProps {
 
 export default function MobileLayout(props: IMobileLayoutProps) {
   return (
-    <div className={styles["m-layout"]}>
-      <MHeader />
-      {props.children}
-    </div>
+    <Suspense fallback={<Loading />}>
+      <div className={styles["m-layout"]}>
+        <MHeader />
+        {props.children}
+      </div>
+    </Suspense>
   );
 }

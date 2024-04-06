@@ -10,6 +10,10 @@ declare global {
   }
 }
 
+interface ILoadEtasOptions {
+  counterCallback: (count: number, total: number) => void;
+}
+
 /* stops.json */
 interface IApiBusAllStops {
   type: string;
@@ -171,9 +175,15 @@ export class BusInstance {
     this.sortedNearbyStops = [];
     this.sortedNearbyGroupedStops = [];
 
-    const firstTryConditions = [(stop: IDistancedBusStop) => stop.distance < 2];
+    window.bus = this;
+  }
 
+  async searchNearbyStops(showProgressMessage: (message: string) => void) {
+    const firstTryConditions = [(stop: IDistancedBusStop) => stop.distance < 2];
     let c = 30;
+
+    // delay for react to update the UI first
+    const delay = () => new Promise((resolve) => setTimeout(resolve, 0));
 
     while (!this.nearbyRoutes.length) {
       this.sortedNearbyStops = this.getSortedNearbyStops(c);
@@ -191,9 +201,10 @@ export class BusInstance {
         "routes"
       );
       c += c == 30 ? 5 : 15;
-    }
 
-    window.bus = this;
+      showProgressMessage(`Searching for nearby bus stops (${c})...`);
+      await delay();
+    }
   }
 
   getSortedNearbyStops(count: number): IDistancedBusStop[] {
@@ -249,9 +260,13 @@ export class BusInstance {
     );
   }
 
-  async loadEtas() {
+  async loadEtas({ counterCallback }: ILoadEtasOptions) {
+    const total = this.nearbyRoutes.length;
+    let i = 0;
     for (const route of this.nearbyRoutes) {
-      const etaData = await route.fetchEtaData();
+      counterCallback(i, total);
+      await route.fetchEtaData();
+      i++;
     }
   }
 }

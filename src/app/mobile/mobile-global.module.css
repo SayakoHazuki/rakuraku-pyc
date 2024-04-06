@@ -1,0 +1,22 @@
+.m-layout {
+  height: 100%;
+  max-width: 80vh;
+  margin: 0 auto;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  width: 100%;
+}
+
+.mobileLoaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.mobileLoaderContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

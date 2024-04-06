@@ -4,7 +4,7 @@ import GApiClient from "@/util/googleapi";
 import styles from "./index.module.css";
 import { useEffect, useState } from "react";
 import useScript from "@/util/misc/useScript";
-import GoogleAuthButton from "@/shared/components/google/GAuthButton";
+import GoogleAuthButton from "@/components/shared/google/GAuthButton";
 import MEventList from "./eventList";
 import { GSheetRow } from "./types";
 

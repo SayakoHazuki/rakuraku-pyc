@@ -24,7 +24,8 @@ export function getDistanceFromLatLonInKm(
 
 export async function getCurrentPosition() {
   return new Promise<[number, number]>((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition((position) => {
+    console.log(window.navigator);
+    window.navigator.geolocation.getCurrentPosition((position) => {
       resolve([position.coords.latitude, position.coords.longitude]);
     });
   });
