@@ -76,7 +76,6 @@ function _MBusETA() {
 }
 
 export default function MBusETA() {
-  console.log("TESTING");
   return (
     <MBusEtaLoader>
       <_MBusETA />

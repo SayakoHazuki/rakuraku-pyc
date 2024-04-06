@@ -17,7 +17,7 @@ interface IIndicatorProvider {
 export const MBusEtaIndicatorCtx = createContext<IIndicatorProvider>({
   active: true,
   setActive: () => {},
-  step: "testing msg",
+  step: "Loading...",
   setStep: () => {},
 });
 
@@ -26,7 +26,7 @@ interface IIndicatorProviderProps {
 }
 function IndicatorProvider({ children }: IIndicatorProviderProps) {
   const [active, setActive] = useState(true);
-  const [step, setStep] = useState("testing msg2");
+  const [step, setStep] = useState("Loading...");
   const value = useMemo(
     () => ({
       active,
