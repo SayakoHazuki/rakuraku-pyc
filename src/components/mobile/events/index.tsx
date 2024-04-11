@@ -7,6 +7,8 @@ import useScript from "@/util/misc/useScript";
 import GoogleAuthButton from "@/components/shared/google/GAuthButton";
 import MEventList from "./eventList";
 import { GSheetRow } from "./types";
+import { EventCollection } from "@/util/events";
+import { AppCache } from "@/util/cache";
 
 declare global {
   interface Window {
@@ -15,54 +17,68 @@ declare global {
 }
 
 export function MEvents() {
-  const gClient = new GApiClient(
-    process.env.NEXT_PUBLIC_GAPI_CLIENT_ID,
-    process.env.NEXT_PUBLIC_GAPI_API_KEY,
-    ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
-    "https://www.googleapis.com/auth/spreadsheets.readonly"
-  );
-
   const [gAuthButtonShown, setGAuthButtonShown] = useState(false);
   const [gAuthButtonTxt, setGAuthButtonTxt] = useState("Loading...");
   const [gAuthSignoutButtonShown, setGAuthSignoutButtonShown] = useState(false);
   const [gAuthMessage, setGAuthMessage] = useState("");
   const [gAuthError, setGAuthError] = useState("");
-  const [ESSData, setESSData] = useState<GSheetRow[]>([]);
   const [targetForm, setTargetForm] = useState(1);
+  const [events, setEvents] = useState<EventCollection>();
 
-  gClient.displayGAuthButton = (text: string) => {
-    setGAuthButtonTxt(text);
-    setGAuthButtonShown(true);
-  };
-  gClient.displayGAuthSignoutButton = () => {
-    setGAuthSignoutButtonShown(true);
-  };
-  gClient.hideGAuthButton = () => {
-    setGAuthButtonShown(false);
-  };
-  gClient.hideGAuthSignoutButton = () => {
-    setGAuthSignoutButtonShown(false);
-  };
-  gClient.displayGAuthMessage = (text: string) => {
-    setGAuthMessage(text);
-  };
-  gClient.displayGAuthError = (err: any) => {
-    setGAuthError(err);
-  };
+  let gClient: GApiClient;
 
-  gClient.ESSDataCallback = (data: GSheetRow[]) => {
-    setESSData(data);
-  };
+  function setUpGClient() {
+    gClient = new GApiClient(
+      process.env.NEXT_PUBLIC_GAPI_CLIENT_ID,
+      process.env.NEXT_PUBLIC_GAPI_API_KEY,
+      ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+      "https://www.googleapis.com/auth/spreadsheets.readonly"
+    );
+
+    gClient.displayGAuthButton = (text: string) => {
+      setGAuthButtonTxt(text);
+      setGAuthButtonShown(true);
+    };
+    gClient.displayGAuthSignoutButton = () => {
+      setGAuthSignoutButtonShown(true);
+    };
+    gClient.hideGAuthButton = () => {
+      setGAuthButtonShown(false);
+    };
+    gClient.hideGAuthSignoutButton = () => {
+      setGAuthSignoutButtonShown(false);
+    };
+    gClient.displayGAuthMessage = (text: string) => {
+      setGAuthMessage(text);
+    };
+    gClient.displayGAuthError = (err: any) => {
+      setGAuthError(err);
+    };
+
+    gClient.ESSDataCallback = (data: GSheetRow[]) => {
+      const fetchedEvents = new EventCollection(data);
+      fetchedEvents.saveToCache();
+      setEvents(fetchedEvents);
+    };
+  }
 
   useEffect(() => {
-    window.client = gClient;
+    const cachedData = AppCache.getSchoolEvents();
+
+    if (cachedData) {
+      console.log("Using cached data");
+      setEvents(cachedData);
+    } else {
+      setUpGClient();
+      window.client = gClient;
+    }
   }, []);
 
   useScript("https://apis.google.com/js/api.js", true, () => {
-    window.client.onGapiLoaded();
+    window.client?.onGapiLoaded();
   });
   useScript("https://accounts.google.com/gsi/client", true, () => {
-    window.client.onGisLoaded();
+    window.client?.onGisLoaded();
   });
 
   const handleFormSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -83,7 +99,7 @@ export function MEvents() {
       {gAuthButtonShown ? <GoogleAuthButton text={gAuthButtonTxt} /> : null}
       <div>{gAuthMessage}</div>
       <div>{gAuthError}</div>
-      <MEventList rowData={ESSData} targetForm={targetForm} />
+      <MEventList events={events} targetForm={targetForm} />
     </div>
   );
 }

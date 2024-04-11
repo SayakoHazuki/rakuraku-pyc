@@ -3,7 +3,7 @@ import styles from "./index.module.css";
 import { GSheetRow } from "./types";
 
 interface IMEventListProps {
-  rowData: GSheetRow[];
+  events?: EventCollection;
   targetForm: number;
 }
 
@@ -18,8 +18,8 @@ export default function MEventList(props: IMEventListProps) {
   if (!(props.targetForm >= 1 && props.targetForm <= 6)) props.targetForm = 1;
   const targetForm = Math.floor(props.targetForm);
 
-  const events = new EventCollection(props.rowData);
-  console.log(events);
+  const { events } = props;
+  if (!events) return null;
 
   return (
     <div className={styles.containerInner}>

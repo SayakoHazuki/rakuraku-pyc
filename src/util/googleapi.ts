@@ -1,4 +1,5 @@
 import { GSheetRow } from "@/components/mobile/events/types";
+import { AppCache } from "./cache";
 
 interface ITokenClient extends google.accounts.oauth2.TokenClient {
   callback: (resp: any) => void;
@@ -54,6 +55,7 @@ export default class GApiClient {
 
   onGapiLoaded() {
     console.log("GAPI loaded");
+
     gapi.load("client", () => {
       this.initializeGapiClient();
     });

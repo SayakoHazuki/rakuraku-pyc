@@ -1,6 +1,7 @@
 import { GSheetRow } from "@/components/mobile/events/types";
+import { AppCache } from "./cache";
 
-interface EventData {
+export interface EventData {
   date?: EventDate;
   session: string;
   title: string;
@@ -17,11 +18,20 @@ export interface EventDate {
   identifier: string;
 }
 
+interface EventCollectionOptions {
+  jsonOverride?: EventData[];
+}
 export class EventCollection {
-  raw: GSheetRow[];
+  raw?: GSheetRow[];
   data: EventData[];
 
-  constructor(data: GSheetRow[]) {
+  constructor(data: GSheetRow[], options: EventCollectionOptions = {}) {
+    if (options.jsonOverride) {
+      this.raw = [];
+      this.data = options.jsonOverride;
+      return;
+    }
+
     this.raw = data;
     this.data = [];
 
@@ -117,5 +127,13 @@ Cycle 1 Day A \n`
       }
     }
     return sessions;
+  }
+
+  saveToCache() {
+    AppCache.saveSchoolEvents(this);
+  }
+
+  static fromJSON(data: EventData[]) {
+    return new EventCollection([], { jsonOverride: data });
   }
 }
