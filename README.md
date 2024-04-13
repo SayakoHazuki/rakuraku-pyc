@@ -4,9 +4,9 @@ Link: https://rakuraku-pyc.vercel.app/
 
 ## Current Features
 - View ETA of nearby KMB buses that goes to Wo Che
+- Display upcoming events from the Event Scheduling System (ESS)
 
 ## Planned Features
-- Display upcoming events from the Event Scheduling System (ESS)
 - Display timetable
 - Display school calendar
 - Integrations with PYCNet
